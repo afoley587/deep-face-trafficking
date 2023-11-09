@@ -139,7 +139,7 @@ my webcam, processing frames of myself showcasing various facial expressions:
 prompt> poetry run python trafficdetection/main.py --video-device 0 --save-results --show-results
 prompt> 
 ```
-[Test Webcam](./images/webcam.gif)
+![Test Webcam](./images/webcam.gif)
 
 We can see that my expressions are captured in real time from my webcam. There
 is a slight delay as we buffer frames and then process them on a separate
@@ -163,7 +163,7 @@ prompt> poetry run python trafficdetection/main.py --video-file ./trafficdetecti
 2023-11-09 10:36:20.154 | INFO     | utils:analyze_video:66 - Found Possible Criteria Match - is_possible_trafficking
 2023-11-09 10:36:22.256 | INFO     | utils:analyze_video:66 - Found Possible Criteria Match - is_possible_trafficking
 ```
-[Test Video File](./images/evil-dead.gif)
+![Test Video File](./images/evil-dead.gif)
 
 ## Preliminary Discussion
 
