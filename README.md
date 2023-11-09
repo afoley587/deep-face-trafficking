@@ -166,4 +166,25 @@ prompt> poetry run python trafficdetection/main.py --video-file ./trafficdetecti
 ![Test Video File](./images/evil-dead.gif)
 
 ## Preliminary Discussion
+Now, this does seem to work OK up to this point, but I have some concerns:
 
+* A lot of misclassification - The DeepFace analyses definitely work and,
+    for being open source with no tuning, work pretty dang well! I based
+    this project off of `RetinaFace` and I will likely play around with
+    other models. I see the biggest issues with ages and emotions, races
+    and genders seem to be a bit more robust.
+* Processing time - On my computer, the processing time was pretty high.
+    I am using a basic laptop and all computations take place on my CPU.
+    I implemented a buffered video reader so that I wouldn't miss frames,
+    but it would be fun to see what kind of performance we can achieve on
+    a GPU or more proper hardware.
+* Criterias - It's really hard to set a criteria for human trafficking.
+    I would assume it is a certain demographic showing fear, disgust, or
+    sadness. It might be worth implementing some scoring mechanism. An 
+    example might be: This is a fearful woman accompanied by an angry male
+    which scores higher than just a fearful woman by herself. But these
+    criteria are extremely subjective and hard to define.
+
+Anyway, I think I have lots more work to do here, but I hope you enjoyed 
+my preliminary results and following along. If you would like to see the
+code or join up in the project, please respond or reach out to me!
