@@ -1,5 +1,4 @@
 import argparse
-import os
 
 import cv2
 from loguru import logger
@@ -64,7 +63,9 @@ def analyze_video(device=0, criterias=[], show=True, save=True):
                 # Eventually do some processing here
                 label = criteria.__name__
                 logger.info(f"Found Possible Criteria Match - {label}")
-                (diff_x, diff_y), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
+                (diff_x, diff_y), _ = cv2.getTextSize(
+                    label, cv2.FONT_HERSHEY_SIMPLEX, 2, 2
+                )
                 h, w, _ = frame.shape
                 cv2.rectangle(
                     frame,

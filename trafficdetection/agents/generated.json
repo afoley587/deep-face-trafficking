@@ -1,0 +1,56 @@
+{
+    "predicates": [
+      {
+        "field": "currentAge",
+        "operator": "Between",
+        "from": 25,
+        "to": 35
+      },
+      {
+        "field": "gender",
+        "operator": "IsIn",
+        "values": [
+          "Male"
+        ]
+      },
+      {
+        "field": "ethnicities",
+        "operator": "Matches",
+        "predicates": [
+          {
+            "field": "raceEthnicity",
+            "operator": "IsIn",
+            "values": [
+              "White / Caucasian"
+            ]
+          }
+        ]
+      }
+    ],
+    "take": 25,
+    "skip": 0,
+    "projections": [
+      "idFormatted",
+      "dateOfLastContact",
+      "lastName",
+      "firstName",
+      "computedMissingMinAge",
+      "computedMissingMaxAge",
+      "cityOfLastContact",
+      "countyDisplayNameOfLastContact",
+      "stateDisplayNameOfLastContact",
+      "gender",
+      "raceEthnicity",
+      "modifiedDateTime",
+      "namus2Number"
+    ],
+    "orderSpecifications": [
+      {
+        "field": "dateOfLastContact",
+        "direction": "Descending"
+      }
+    ],
+    "documentFragments": [
+      "birthDate"
+    ]
+  }

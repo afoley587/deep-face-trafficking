@@ -16,6 +16,15 @@ tensorflow = "^2.14.0"
 tensorflow-macos = "^2.14.0"
 black = "^23.11.0"
 loguru = "^0.7.2"
+###
+# PITA
+###
+# brew install exiv2 boost boost-python3
+# export CPLUS_INCLUDE_PATH=/opt/homebrew/Cellar/exiv2/0.27.6/include/:/opt/homebrew/opt/libssh/include/:/opt/homebrew/Cellar/boost/1.82.0_1/include/
+# export LDFLAGS="-L/opt/homebrew/Cellar/boost-python3/1.82.0_1/lib -L/opt/homebrew/Cellar/exiv2/0.27.6/lib"
+py3exiv2 = "^0.12.0"
+pydantic = "^2.5.0"
+requests = "^2.31.0"
 
 [build-system]
 requires = ["poetry-core"]
