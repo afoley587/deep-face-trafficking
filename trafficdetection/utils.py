@@ -5,6 +5,7 @@ from loguru import logger
 
 from detectors.bufferedvideoreader import BufferedVideoReader
 from detectors.imagereader import ImageReader
+from agents.namus import search_namus
 
 
 def parse_args():
@@ -96,10 +97,12 @@ def analyze_video(device=0, criterias=[], show=True, save=True):
 
 def analyze_image(filename, criterias=[], show=True, save=True):
     ir = ImageReader()
-    frame = ir.read(filename)
+    orig = ir.read(filename)
+    frame = orig.copy()
     frame, res = ir.process(frame)
 
     for criteria in criterias:
+        logger.info(res)
         if criteria(res):
             # Eventually do some processing here
             label = criteria.__name__
@@ -122,6 +125,9 @@ def analyze_image(filename, criterias=[], show=True, save=True):
                 (0, 0, 0),
                 1,
             )
+            for r in res:
+                # search_namus(orig, race=r['dominant_race'], age=r['age'], gender=r['dominant_gender'])
+                search_namus(orig, race="white", age=30, gender="woman")
 
     if save:
         save_to = filename.split(".")

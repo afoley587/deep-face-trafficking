@@ -2,8 +2,9 @@ from concurrent.futures import ThreadPoolExecutor
 import shutil
 import tempfile
 
-import requests
 from deepface import DeepFace
+from loguru import logger
+import requests
 
 from schemas.namus import (
     NamusPayloadPredicate,
@@ -21,29 +22,28 @@ class NamusFaceComparator:
         self.is_running = False
 
     def _run_analysis(self, result, original_image):
-        print("In _run_analysis")
-        print(result)
+        logger.info(result)
         if not self.is_running:
-            return False
+            return None
 
         url = NAMUS_BASE + result.image
         response = requests.get(url, stream=True)
         tmp = tempfile.NamedTemporaryFile(suffix=".png")
 
-        print(tmp.name)
+        logger.info(tmp.name)
         with open(tmp.name, "wb") as out_file:
             shutil.copyfileobj(response.raw, out_file)
 
-        result = DeepFace.verify(
+        verif = DeepFace.verify(
             img1_path=tmp.name, img2_path=original_image, enforce_detection=False
         )
 
-        print("Result is:", result)
-        if result["verified"]:
-            # self.running = False
+        logger.info(f"Result is: {verif}")
+
+        if verif["verified"]:
             return result
 
-        return False
+        return None
 
     def run_analysis(self, results, original):
         self.is_running = True
@@ -53,12 +53,14 @@ class NamusFaceComparator:
 
         for future in futures:
             res = future.result()
-            print("Future returned: ", res)
-            if (res is not None) and (res == True):
-                print("FOUND POSSIBLE!")
+            logger.info(f"Future returned: {res}")
+            if res is not None:
+                self.running = False
+                logger.info("FOUND POSSIBLE!")
 
 
 def search_namus(original, race=None, age=None, gender=None, emotion=None):
+    logger.info("SEARCH NAMUS")
     search_api = NAMUS_BASE + "/api/CaseSets/NamUs/MissingPersons/Search"
 
     headers = {"Content-Type": "application/json; charset=utf-8"}
@@ -96,7 +98,11 @@ def search_namus(original, race=None, age=None, gender=None, emotion=None):
         )
 
     if gender is not None:
-        gender = gender.title()
+        if gender.lower() == "woman":
+            gender = "Female"
+        else:
+            gender = "Male"
+
         predicates.append(
             NamusPayloadPredicate(
                 field="gender",
@@ -110,13 +116,14 @@ def search_namus(original, race=None, age=None, gender=None, emotion=None):
     )
     r = requests.post(search_api, headers=headers, data=payload)
     matches = None
-
+    logger.info(r)
+    logger.info(payload)
     if not r.ok:
-        print(r)
-        print(payload)
+        logger.info(r)
+        logger.info(payload)
     else:
         _json = r.json()
-        # print(_json)
+        logger.info(_json)
         matches = NamusResponse(**_json)
 
     if matches is not None:
