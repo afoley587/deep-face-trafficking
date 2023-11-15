@@ -14,10 +14,10 @@ def parse_args():
     parser.add_argument("-f", "--video-file", type=str, required=False)
     parser.add_argument("-i", "--images-directory", type=str, required=False)
     parser.add_argument(
-        "-r", "--save-results", action="store_true", required=False, default=True
+        "-r", "--save-results", action="store_true", required=False, default=False
     )
     parser.add_argument(
-        "-s", "--show-results", action="store_true", required=False, default=True
+        "-s", "--show-results", action="store_true", required=False, default=False
     )
     return parser.parse_args()
 
