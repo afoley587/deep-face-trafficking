@@ -1599,16 +1599,6 @@ files = [
 ]
 
 [[package]]
-name = "py3exiv2"
-version = "0.12.0"
-description = "A Python3 binding to the library exiv2"
-optional = false
-python-versions = "*"
-files = [
-    {file = "py3exiv2-0.12.0.tar.gz", hash = "sha256:72b23e5f760c4733cf9a918db08d94fbd6d9830711d2a4e8c09b8f34563f3a8a"},
-]
-
-[[package]]
 name = "pyasn1"
 version = "0.5.0"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -2586,4 +2576,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.12"
-content-hash = "aec0bd5ccf273d31d5492d8f1bf3eca37bc79fd620b4089362baff63b759613b"
+content-hash = "2cea8a6baabcc28ee35fc9cb28f35b60797f7925c68944538ddf8ff52c12d476"

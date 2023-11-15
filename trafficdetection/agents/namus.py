@@ -22,7 +22,7 @@ class NamusFaceComparator:
         self.is_running = False
 
     def _run_analysis(self, result, original_image):
-        logger.info(result)
+
         if not self.is_running:
             return None
 
@@ -30,7 +30,6 @@ class NamusFaceComparator:
         response = requests.get(url, stream=True)
         tmp = tempfile.NamedTemporaryFile(suffix=".png")
 
-        logger.info(tmp.name)
         with open(tmp.name, "wb") as out_file:
             shutil.copyfileobj(response.raw, out_file)
 
