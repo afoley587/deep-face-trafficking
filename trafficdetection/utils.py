@@ -5,7 +5,8 @@ from loguru import logger
 
 from detectors.bufferedvideoreader import BufferedVideoReader
 from detectors.imagereader import ImageReader
-from agents.namus import search_namus
+from agents.namus import NamusSearchAgent
+from publishers.rabbitmq import ImagePublisher
 
 
 def parse_args():
@@ -95,11 +96,13 @@ def analyze_video(device=0, criterias=[], show=True, save=True):
                 break
 
 
-def analyze_image(filename, criterias=[], show=True, save=True):
+def analyze_image(filename, criterias=[], show=True, save=True, label_criteria=False):
     ir = ImageReader()
     orig = ir.read(filename)
     frame = orig.copy()
-    frame, res = ir.process(frame)
+    frame, res = ir.process(frame, add_labels=label_criteria)
+
+    nsa = NamusSearchAgent()
 
     for criteria in criterias:
         logger.info(res)
@@ -107,27 +110,32 @@ def analyze_image(filename, criterias=[], show=True, save=True):
             # Eventually do some processing here
             label = criteria.__name__
             logger.info(f"Found Possible Criteria Match - {label}")
-            (diff_x, diff_y), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 1, 1)
-            h, w, _ = frame.shape
-            cv2.rectangle(
-                frame,
-                ((w - diff_x) // 2, h - 2 * diff_y),
-                ((w + diff_x) // 2, h),
-                (255, 255, 255),
-                -1,
-            )
-            cv2.putText(
-                frame,
-                label,
-                ((w - diff_x) // 2, h - diff_y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (0, 0, 0),
-                1,
-            )
+
+            if label_criteria:
+                (diff_x, diff_y), _ = cv2.getTextSize(
+                    label, cv2.FONT_HERSHEY_SIMPLEX, 1, 1
+                )
+                h, w, _ = frame.shape
+                cv2.rectangle(
+                    frame,
+                    ((w - diff_x) // 2, h - 2 * diff_y),
+                    ((w + diff_x) // 2, h),
+                    (255, 255, 255),
+                    -1,
+                )
+                cv2.putText(
+                    frame,
+                    label,
+                    ((w - diff_x) // 2, h - diff_y),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0, 0, 0),
+                    1,
+                )
+
             for r in res:
-                # search_namus(orig, race=r['dominant_race'], age=r['age'], gender=r['dominant_gender'])
-                search_namus(orig, race="white", age=30, gender="woman")
+                # nsa.search(orig, race=r['dominant_race'], age=r['age'], gender=r['dominant_gender'])
+                nsa.search(orig, race="white", age=30, gender="woman")
 
     if save:
         save_to = filename.split(".")

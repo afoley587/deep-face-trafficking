@@ -27,6 +27,7 @@ loguru = "^0.7.2"
 # py3exiv2
 pydantic = "^2.5.0"
 requests = "^2.31.0"
+pika = "^1.3.2"
 
 [build-system]
 requires = ["poetry-core"]
