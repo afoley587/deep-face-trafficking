@@ -1,10 +1,13 @@
 package registration
 
 import (
+	"encoding/hex"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
+	"crypto/md5"
 	"streamers/schemas"
 
 	"streamers/writers"
@@ -24,23 +27,38 @@ const (
 )
 
 func registerWebcam(dev int) {
-	frames := 0
 	webcam, _ := gocv.VideoCaptureDevice(dev)
 	img := gocv.NewMat()
 
+	pref := "webcam_" + strconv.Itoa(dev)
+	w := writers.FileWriter{Prefix: pref}
+	c := make(chan gocv.Mat)
+	read := 0
+	still_reading := true
+
+	go w.Write(c)
+
 	for {
-		webcam.Read(&img)
-		frames++
-		if frames%BUFFSIZE == 0 {
-			fmt.Println("Sending frames")
+		still_reading = webcam.Read(&img)
+		if !still_reading || read > 500 {
+			break
 		}
+		c <- img
+		read++
 	}
+	fmt.Println("Webcam is done... add tombstone here")
+	fmt.Println("Read " + strconv.Itoa(read) + " frames")
+	close(c)
+	webcam.Close()
 }
 
 func registerUrl() {
-	stream, _ := gocv.OpenVideoCapture("https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4")
+	url := "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
+	h := md5.New()
+	io.WriteString(h, url)
+	stream, _ := gocv.OpenVideoCapture(url)
 	img := gocv.NewMat()
-	w := writers.FileWriter{Prefix: "test"}
+	w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
 	c := make(chan gocv.Mat)
 	read := 0
 	still_reading := true
