@@ -3,8 +3,11 @@ package registration
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"streamers/schemas"
+
+	"streamers/writers"
 
 	"github.com/gin-gonic/gin"
 	"gocv.io/x/gocv"
@@ -35,7 +38,26 @@ func registerWebcam(dev int) {
 }
 
 func registerUrl() {
-	fmt.Println("register url")
+	stream, _ := gocv.OpenVideoCapture("https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4")
+	img := gocv.NewMat()
+	w := writers.FileWriter{Prefix: "test"}
+	c := make(chan gocv.Mat)
+	read := 0
+	still_reading := true
+
+	go w.Write(c)
+
+	for {
+		still_reading = stream.Read(&img)
+		if !still_reading {
+			break
+		}
+		c <- img
+		read++
+	}
+	fmt.Println("Stream is done... add tombstone here")
+	fmt.Println("Read " + strconv.Itoa(read) + " frames")
+	close(c)
 }
 
 func registerIp() {
@@ -58,6 +80,7 @@ func GetRegistrationRouter(router *gin.Engine) *gin.Engine {
 				"message": "Bad Request",
 			})
 		} else {
+			go registerUrl()
 			c.JSON(http.StatusOK, gin.H{
 				"message": "Registered",
 			})
