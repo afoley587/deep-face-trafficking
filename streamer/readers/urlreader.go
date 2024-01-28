@@ -8,7 +8,7 @@ type UrlReader struct {
 	Url string
 }
 
-func (r UrlReader) Read(imgs chan<- gocv.Mat) (int, error) {
+func (r UrlReader) Read(imgs chan<- gocv.Mat, done chan<- int) (int, error) {
 	read := 0
 	still_reading := true
 
@@ -23,5 +23,6 @@ func (r UrlReader) Read(imgs chan<- gocv.Mat) (int, error) {
 		imgs <- img
 		read++
 	}
+	done <- read
 	return read, nil
 }

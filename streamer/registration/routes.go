@@ -32,9 +32,11 @@ func registerWebcam(dev int) {
 	pref := "webcam_" + strconv.Itoa(dev)
 	w := writers.FileWriter{Prefix: pref}
 	c := make(chan gocv.Mat)
-
+	d := make(chan int)
 	go w.Write(c)
-	read, _ := reader.Read(c)
+	go reader.Read(c, d)
+
+	read := <-d
 
 	fmt.Println("Webcam is done... add tombstone here")
 	fmt.Println("Read " + strconv.Itoa(read) + " frames")
@@ -49,9 +51,13 @@ func registerUrl() {
 	io.WriteString(h, url)
 	w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
 	c := make(chan gocv.Mat)
-
+	d := make(chan int)
+	// var wg sync.WaitGroup
+	// wg.Add(2)
 	go w.Write(c)
-	read, _ := reader.Read(c)
+	go reader.Read(c, d)
+
+	read := <-d
 
 	fmt.Println("Stream is done... add tombstone here")
 	fmt.Println("Read " + strconv.Itoa(read) + " frames")

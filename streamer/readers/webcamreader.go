@@ -8,7 +8,7 @@ type WebcamReader struct {
 	Device int
 }
 
-func (r WebcamReader) Read(imgs chan<- gocv.Mat) (int, error) {
+func (r WebcamReader) Read(imgs chan<- gocv.Mat, done chan<- int) (int, error) {
 	read := 0
 	still_reading := true
 
@@ -23,6 +23,7 @@ func (r WebcamReader) Read(imgs chan<- gocv.Mat) (int, error) {
 		imgs <- img
 		read++
 	}
+	done <- read
 	webcam.Close()
 	return read, nil
 }
