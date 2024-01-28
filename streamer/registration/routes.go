@@ -54,9 +54,7 @@ func registerUrl(url string) {
 	// var wg sync.WaitGroup
 	// wg.Add(2)
 	go w.Write(c)
-	fmt.Println("Writer Started")
-	reader.Read(c, d) // making this a goroutine makes a panic in the container?
-	fmt.Println("Reader Finished")
+	go reader.Read(c, d)
 	read := <-d
 
 	fmt.Println("Stream is done... add tombstone here")

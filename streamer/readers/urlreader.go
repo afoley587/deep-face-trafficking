@@ -1,6 +1,8 @@
 package readers
 
 import (
+	"fmt"
+
 	"gocv.io/x/gocv"
 )
 
@@ -12,7 +14,13 @@ func (r UrlReader) Read(imgs chan<- gocv.Mat, done chan<- int) (int, error) {
 	read := 0
 	still_reading := true
 
-	stream, _ := gocv.OpenVideoCapture(r.Url)
+	stream, err := gocv.OpenVideoCapture(r.Url)
+
+	if err != nil {
+		fmt.Println(err)
+		done <- read
+		return 0, err
+	}
 	img := gocv.NewMat()
 
 	for {

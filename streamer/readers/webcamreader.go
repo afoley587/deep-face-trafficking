@@ -23,6 +23,7 @@ func (r WebcamReader) Read(imgs chan<- gocv.Mat, done chan<- int) (int, error) {
 		imgs <- img
 		read++
 	}
+
 	done <- read
 	webcam.Close()
 	return read, nil
