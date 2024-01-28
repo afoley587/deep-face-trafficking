@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"crypto/md5"
+	"streamers/readers"
 	"streamers/schemas"
-
 	"streamers/writers"
 
 	"github.com/gin-gonic/gin"
@@ -27,52 +27,32 @@ const (
 )
 
 func registerWebcam(dev int) {
-	webcam, _ := gocv.VideoCaptureDevice(dev)
-	img := gocv.NewMat()
+	reader := readers.WebcamReader{Device: dev}
 
 	pref := "webcam_" + strconv.Itoa(dev)
 	w := writers.FileWriter{Prefix: pref}
 	c := make(chan gocv.Mat)
-	read := 0
-	still_reading := true
 
 	go w.Write(c)
+	read, _ := reader.Read(c)
 
-	for {
-		still_reading = webcam.Read(&img)
-		if !still_reading || read > 500 {
-			break
-		}
-		c <- img
-		read++
-	}
 	fmt.Println("Webcam is done... add tombstone here")
 	fmt.Println("Read " + strconv.Itoa(read) + " frames")
 	close(c)
-	webcam.Close()
+
 }
 
 func registerUrl() {
 	url := "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
+	reader := readers.UrlReader{Url: url}
 	h := md5.New()
 	io.WriteString(h, url)
-	stream, _ := gocv.OpenVideoCapture(url)
-	img := gocv.NewMat()
 	w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
 	c := make(chan gocv.Mat)
-	read := 0
-	still_reading := true
 
 	go w.Write(c)
+	read, _ := reader.Read(c)
 
-	for {
-		still_reading = stream.Read(&img)
-		if !still_reading {
-			break
-		}
-		c <- img
-		read++
-	}
 	fmt.Println("Stream is done... add tombstone here")
 	fmt.Println("Read " + strconv.Itoa(read) + " frames")
 	close(c)
