@@ -50,12 +50,13 @@ func registerUrl(url string) {
 	io.WriteString(h, url)
 	w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
 	c := make(chan gocv.Mat)
-	d := make(chan int)
+	d := make(chan int, 1)
 	// var wg sync.WaitGroup
 	// wg.Add(2)
 	go w.Write(c)
-	go reader.Read(c, d)
-
+	fmt.Println("Writer Started")
+	reader.Read(c, d) // making this a goroutine makes a panic in the container?
+	fmt.Println("Reader Finished")
 	read := <-d
 
 	fmt.Println("Stream is done... add tombstone here")

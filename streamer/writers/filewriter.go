@@ -26,7 +26,7 @@ func (w FileWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 	numBuffs := 0
 	buffSize := 100
 	cnt := 0
-	filename := w.Prefix + "_" + strconv.Itoa(numBuffs) + ".avi"
+	filename := "/tmp/" + w.Prefix + "_" + strconv.Itoa(numBuffs) + ".avi"
 	fmt.Println("filename: " + filename)
 	writer, err := openNewCatpure(filename, img.Cols(), img.Rows())
 	if err != nil {
@@ -45,7 +45,7 @@ func (w FileWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 			fmt.Println("opening new...")
 			writer.Close()
 			numBuffs += 1
-			filename = w.Prefix + "_" + strconv.Itoa(numBuffs) + ".avi"
+			filename = "/tmp/" + w.Prefix + "_" + strconv.Itoa(numBuffs) + ".avi"
 			writer, err = openNewCatpure(filename, img.Cols(), img.Rows())
 			if err != nil {
 				fmt.Printf("error opening video writer device: %v\n", filename)
