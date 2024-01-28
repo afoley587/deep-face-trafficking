@@ -44,8 +44,7 @@ func registerWebcam(dev int) {
 
 }
 
-func registerUrl() {
-	url := "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
+func registerUrl(url string) {
 	reader := readers.UrlReader{Url: url}
 	h := md5.New()
 	io.WriteString(h, url)
@@ -84,10 +83,12 @@ func GetRegistrationRouter(router *gin.Engine) *gin.Engine {
 				"message": "Bad Request",
 			})
 		} else {
-			go registerUrl()
-			c.JSON(http.StatusOK, gin.H{
-				"message": "Registered",
-			})
+			url := "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
+			go registerUrl(url)
+			r := &schemas.UrlRegistrationResponse{Url: url}
+			Registrations = append(Registrations, Registration{Source: "url"})
+			c.JSON(http.StatusOK, r)
+
 		}
 
 	})
