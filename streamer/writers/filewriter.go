@@ -23,6 +23,11 @@ func openNewCatpure(filename string, cols, rows int) (*gocv.VideoWriter, error) 
 
 func (w FileWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 	img := <-imgs // first frame
+
+	if img.Empty() {
+		return 0, nil
+	}
+
 	numBuffs := 0
 	buffSize := 100
 	cnt := 0
