@@ -16,8 +16,8 @@ import (
 //		a. from url
 //		b. from ip
 //		c. from webcam :check:
-// 2. to list webcams
-// 3.
+// 2. to list streams and such
+// 3. health endpoints
 
 func main() {
 	r := gin.Default()
