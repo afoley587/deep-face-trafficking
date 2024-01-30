@@ -1,7 +1,6 @@
 package registration
 
 import (
-	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -48,7 +47,8 @@ func registerUrl(url string) {
 	reader := readers.UrlReader{Url: url}
 	h := md5.New()
 	io.WriteString(h, url)
-	w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
+	// w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
+	w := writers.PikaWriter{Topic: "test"}
 	c := make(chan gocv.Mat)
 	d := make(chan int, 1)
 	// var wg sync.WaitGroup
