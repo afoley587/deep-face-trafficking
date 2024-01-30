@@ -7,7 +7,3 @@ type WebcamRegistrationResponse struct {
 type UrlRegistrationResponse struct {
 	Url string `json:"url"`
 }
-
-type ErrorUrlRegistrationResponse struct {
-	Message string `json:"message"`
-}
