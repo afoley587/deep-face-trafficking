@@ -48,7 +48,7 @@ func registerUrl(url string) {
 	h := md5.New()
 	io.WriteString(h, url)
 	// w := writers.FileWriter{Prefix: hex.EncodeToString((h.Sum(nil)))}
-	w := writers.PikaWriter{Topic: "test"}
+	w := writers.PikaWriter{Topic: "streams", Exchange: "videostreams"}
 	c := make(chan gocv.Mat)
 	d := make(chan int, 1)
 	// var wg sync.WaitGroup

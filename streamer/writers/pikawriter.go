@@ -13,7 +13,8 @@ import (
 )
 
 type PikaWriter struct {
-	Topic string
+	Topic    string
+	Exchange string
 }
 
 func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
