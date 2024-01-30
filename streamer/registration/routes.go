@@ -78,16 +78,13 @@ func GetRegistrationRouter(router *gin.Engine) *gin.Engine {
 		err := c.BindJSON(&req)
 
 		if err != nil {
-			c.JSON(http.StatusConflict, gin.H{
-				"message": "Bad Request",
-			})
+			r := &schemas.ErrorUrlRegistrationResponse{Message: "Bad Request"}
+			c.JSON(http.StatusBadRequest, r)
 		} else {
-			url := "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"
-			go registerUrl(url)
-			r := &schemas.UrlRegistrationResponse{Url: url}
+			go registerUrl(req.Url)
+			r := &schemas.UrlRegistrationResponse{Url: req.Url}
 			Registrations = append(Registrations, Registration{Source: "url"})
 			c.JSON(http.StatusOK, r)
-
 		}
 
 	})
