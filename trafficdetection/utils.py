@@ -5,6 +5,8 @@ from loguru import logger
 
 from detectors.bufferedvideoreader import BufferedVideoReader
 from detectors.imagereader import ImageReader
+from detectors.pikareader import PikaReader
+
 from agents.namus import NamusSearchAgent
 from publishers.rabbitmq import ImagePublisher
 
@@ -13,6 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--video-device", type=int, required=False)
     parser.add_argument("-f", "--video-file", type=str, required=False)
+    parser.add_argument("-r", "--rabbit", type=str, required=False)
     parser.add_argument("-i", "--images-directory", type=str, required=False)
     parser.add_argument(
         "-r", "--save-results", action="store_true", required=False, default=False
