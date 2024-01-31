@@ -1,7 +1,7 @@
 package writers
 
 import (
-	"fmt"
+	"log"
 
 	"strconv"
 
@@ -27,13 +27,13 @@ func (w FileWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 
 	go func() {
 		for fname := range fchan {
-			fmt.Println("File " + fname + " finished")
+			log.Println("File " + fname + " finished")
 		}
 	}()
 
 	res := <-done
 	close(fchan)
 	close(done)
-	fmt.Println("DONE after " + strconv.Itoa(res.Count))
+	log.Println("DONE after " + strconv.Itoa(res.Count))
 	return res.Count, res.Error
 }

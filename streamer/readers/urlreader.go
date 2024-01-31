@@ -1,7 +1,7 @@
 package readers
 
 import (
-	"fmt"
+	"log"
 
 	"gocv.io/x/gocv"
 )
@@ -17,7 +17,7 @@ func (r UrlReader) Read(imgs chan<- gocv.Mat, done chan<- int) (int, error) {
 	stream, err := gocv.OpenVideoCapture(r.Url)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		done <- read
 		return 0, err
 	}

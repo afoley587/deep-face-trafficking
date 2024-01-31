@@ -2,7 +2,6 @@ package writers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -17,6 +16,7 @@ type PikaWriter struct {
 }
 
 func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
+
 	img := <-imgs // first frame
 
 	if img.Empty() {
@@ -30,7 +30,7 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return 0, err
 	}
 
@@ -48,7 +48,7 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 	)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return 0, err
 	}
 
@@ -57,8 +57,8 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 
 	go func() {
 		for fname := range fchan {
-			fmt.Println("File " + fname + " finished")
-			fmt.Println("Sending to Rabbit")
+			log.Println("File " + fname + " finished")
+			log.Println("Sending to Rabbit")
 			err = ch.PublishWithContext(ctx,
 				w.Exchange, // exchange
 				w.Topic,    // routing key
@@ -73,13 +73,13 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 			// 	return err
 			// }
 
-			log.Printf(" [x] Sent %s\n", fname)
+			log.Println(" [x] Sent " + fname)
 		}
 	}()
 
 	res := <-done
 	close(fchan)
 	close(done)
-	fmt.Println("DONE after " + strconv.Itoa(res.Count))
+	log.Println("DONE after " + strconv.Itoa(res.Count))
 	return res.Count, res.Error
 }

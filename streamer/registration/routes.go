@@ -1,8 +1,8 @@
 package registration
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -37,8 +37,8 @@ func registerWebcam(dev int) {
 
 	read := <-d
 
-	fmt.Println("Webcam is done... add tombstone here")
-	fmt.Println("Read " + strconv.Itoa(read) + " frames")
+	log.Println("Webcam is done... add tombstone here")
+	log.Println("Read " + strconv.Itoa(read) + " frames")
 	close(c)
 
 }
@@ -57,13 +57,13 @@ func registerUrl(url string) {
 	go reader.Read(c, d)
 	read := <-d
 
-	fmt.Println("Stream is done... add tombstone here")
-	fmt.Println("Read " + strconv.Itoa(read) + " frames")
+	log.Println("Stream is done... add tombstone here")
+	log.Println("Read " + strconv.Itoa(read) + " frames")
 	close(c)
 }
 
 func registerIp() {
-	fmt.Println("register ip")
+	log.Println("register ip")
 }
 
 // GetSubMenuRoutes return a group of routes for submenu
