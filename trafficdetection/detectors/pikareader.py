@@ -5,6 +5,8 @@ import pika
 from pika.exchange_type import ExchangeType
 from concurrent.futures import ThreadPoolExecutor
 
+# do this later pretty much 
+# https://github.com/pika/pika/blob/main/examples/asyncio_consumer_example.py
 class PikaReader(BaseReader):
     EXCHANGE = "videostreams"
     BIND_KEY = "streams"
