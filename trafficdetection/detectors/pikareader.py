@@ -8,11 +8,10 @@ class PikaReader(BaseReader):
     EXCHANGE = "videostreams"
     BIND_KEY = "streams"
 
-    def __init__(self, host, virtual_host, username, password, **kwargs):
+    def __init__(self, host, username, password, **kwargs):
         super().__init__(**kwargs)
         self._params = pika.connection.ConnectionParameters(
             host=host,
-            virtual_host=virtual_host,
             credentials=pika.credentials.PlainCredentials(username, password),
         )
         self._conn = None
