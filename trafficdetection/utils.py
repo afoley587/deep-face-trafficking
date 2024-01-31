@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--video-device", type=int, required=False)
     parser.add_argument("-f", "--video-file", type=str, required=False)
-    parser.add_argument("-r", "--rabbit", type=str, required=False)
+    parser.add_argument("-a", "--rabbit", type=str, required=False)
     parser.add_argument("-i", "--images-directory", type=str, required=False)
     parser.add_argument(
         "-r", "--save-results", action="store_true", required=False, default=False
@@ -25,6 +25,9 @@ def parse_args():
     )
     return parser.parse_args()
 
+def analyze_rabbit(params=None, criterias=[], show=True, save=True, label_criteria=False):
+    p = PikaReader("localhost", "guest", "guest")
+    p.connect()
 
 def analyze_video(device=0, criterias=[], show=True, save=True):
     # Create a video capture instance.

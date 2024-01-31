@@ -9,8 +9,8 @@ def main():
 
     if args.rabbit is not None:
         # Streams From A camera
-        utils.analyze_video(
-            device=args.video_device,
+        utils.analyze_rabbit(
+            params=args.rabbit,
             criterias=[is_possible_trafficking],
             show=args.show_results,
             save=args.save_results,

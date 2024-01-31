@@ -3,6 +3,7 @@ from deepface import DeepFace
 from .base import BaseReader
 import pika
 from pika.exchange_type import ExchangeType
+from concurrent.futures import ThreadPoolExecutor
 
 class PikaReader(BaseReader):
     EXCHANGE = "videostreams"
@@ -17,24 +18,40 @@ class PikaReader(BaseReader):
         self._conn = None
         self._channel = None
         self._queue = None
-        self.connect() # fix this
+        self._tpe = ThreadPoolExecutor(max_workers=10)
 
     def connect(self):
         if not self._conn or self._conn.is_closed:
             self._conn = pika.BlockingConnection(self._params)
             self._channel = self._conn.channel()
-            self._channel.exchange_declare(exchange=self.EXCHANGE, type=ExchangeType.topic, durable=True)
+            self._channel.exchange_declare(exchange=self.EXCHANGE, exchange_type=ExchangeType.topic, durable=True)
             self._queue = self._channel.queue_declare(queue='', exclusive=True)
-            self._channel.queue_bind(queue=self._queue.queue.name, exchange=self.EXCHANGE, routing_key=self.BIND_KEY)
-            self._channel.basic_consume(self._queue.queue.name, on_message_callback=self.read, auto_ack=True)
+            self._channel.queue_bind(queue=self._queue.method.queue, exchange=self.EXCHANGE, routing_key=self.BIND_KEY)
+            self._channel.basic_consume(self._queue.method.queue, on_message_callback=self.read, auto_ack=True)
+            self._channel.start_consuming()
 
     def read(self, ch, method, properties, body):
         # TODO read from stream
         # and then invoke process callback
         print(ch, method, properties, body)
+        self._tpe.submit(self.process_video(body.decode("utf-8")))
 
     def get(self, prop):
         return None
+
+    def process_video(self, file):
+        cap = cv2.VideoCapture(file)
+        id = 0
+        while(cap.isOpened()):
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            id += 1
+            if ret == True:
+                print(id)
+            # Break the loop
+            else: 
+                break
+
 
     def process(self, frame, add_labels=True):
         res = DeepFace.analyze(
