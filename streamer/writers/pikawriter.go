@@ -65,13 +65,14 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 	defer conn.Close()
 	ch, err := conn.Channel()
 
-	q, err := ch.QueueDeclare(
-		w.Topic, // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+	err = ch.ExchangeDeclare(
+		w.Exchange, // name
+		"topic",    // type
+		true,       // durable
+		false,      // auto-deleted
+		false,      // internal
+		false,      // no-wait
+		nil,        // arguments
 	)
 
 	if err != nil {
@@ -84,10 +85,10 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 
 	body := "Hello World!"
 	err = ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
+		w.Exchange, // exchange
+		w.Topic,    // routing key
+		false,      // mandatory
+		false,      // immediate
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(body),
