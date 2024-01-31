@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
-
 	"strconv"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gocv.io/x/gocv"
@@ -24,38 +23,11 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 		return 0, nil
 	}
 
-	numBuffs := 0
-	buffSize := 100
-	cnt := 0
-	filename := "/tmp/" + w.Topic + "_" + strconv.Itoa(numBuffs) + ".avi"
-	fmt.Println("filename: " + filename)
-	writer, err := openNewCatpure(filename, img.Cols(), img.Rows())
-	if err != nil {
-		fmt.Printf("error opening video writer device: %v\n", filename)
-		return 0, err
-	}
-	// defer writer.Close()
+	fchan := make(chan string)
+	done := make(chan WriterGoroutineResult)
+	batchPref := "/tmp/" + w.Topic
+	go batchToFile(fchan, done, imgs, batchPref, 100, img.Cols(), img.Rows())
 
-	for img := range imgs {
-		if img.Empty() {
-			continue
-		}
-		writer.Write(img)
-		cnt += 1
-		if cnt%buffSize == 0 {
-			fmt.Println("opening new...")
-			writer.Close()
-			numBuffs += 1
-			filename = "/tmp/" + w.Topic + "_" + strconv.Itoa(numBuffs) + ".avi"
-			writer, err = openNewCatpure(filename, img.Cols(), img.Rows())
-			if err != nil {
-				fmt.Printf("error opening video writer device: %v\n", filename)
-				return 0, err
-			}
-		}
-	}
-	fmt.Println("DONE after " + strconv.Itoa(cnt))
-	writer.Close()
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		fmt.Println(err)
@@ -83,22 +55,31 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	body := "Hello World!"
-	err = ch.PublishWithContext(ctx,
-		w.Exchange, // exchange
-		w.Topic,    // routing key
-		false,      // mandatory
-		false,      // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
+	go func() {
+		for fname := range fchan {
+			fmt.Println("File " + fname + " finished")
+			fmt.Println("Sending to Rabbit")
+			err = ch.PublishWithContext(ctx,
+				w.Exchange, // exchange
+				w.Topic,    // routing key
+				false,      // mandatory
+				false,      // immediate
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(fname),
+				})
 
-	if err != nil {
-		return 0, err
-	}
+			// if err != nil {
+			// 	return err
+			// }
 
-	log.Printf(" [x] Sent %s\n", body)
+			log.Printf(" [x] Sent %s\n", fname)
+		}
+	}()
 
-	return cnt, nil
+	res := <-done
+	close(fchan)
+	close(done)
+	fmt.Println("DONE after " + strconv.Itoa(res.Count))
+	return res.Count, res.Error
 }
