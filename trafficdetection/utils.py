@@ -5,11 +5,9 @@ from loguru import logger
 
 from detectors.bufferedvideoreader import BufferedVideoReader
 from detectors.imagereader import ImageReader
-# from detectors.pikareader import PikaReader
 from detectors.asyncpikareader import ReconnectingAsyncPikaReader
 
 from agents.namus import NamusSearchAgent
-from publishers.rabbitmq import ImagePublisher
 
 
 def parse_args():

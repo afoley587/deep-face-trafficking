@@ -449,13 +449,3 @@ class ReconnectingAsyncPikaReader(object):
         if self._reconnect_delay > 30:
             self._reconnect_delay = 30
         return self._reconnect_delay
-
-# def main():
-#     logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
-#     amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
-#     consumer = ReconnectingAsyncPikaReader(amqp_url)
-#     consumer.run()
-
-
-# if __name__ == '__main__':
-#     main()
