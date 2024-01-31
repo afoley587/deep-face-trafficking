@@ -5,7 +5,8 @@ from loguru import logger
 
 from detectors.bufferedvideoreader import BufferedVideoReader
 from detectors.imagereader import ImageReader
-from detectors.pikareader import PikaReader
+# from detectors.pikareader import PikaReader
+from detectors.asyncpikareader import ReconnectingAsyncPikaReader
 
 from agents.namus import NamusSearchAgent
 from publishers.rabbitmq import ImagePublisher
@@ -26,8 +27,9 @@ def parse_args():
     return parser.parse_args()
 
 def analyze_rabbit(params=None, criterias=[], show=True, save=True, label_criteria=False):
-    p = PikaReader("localhost", "guest", "guest")
-    p.connect()
+    amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+    consumer = ReconnectingAsyncPikaReader(amqp_url)
+    consumer.run()
 
 def analyze_video(device=0, criterias=[], show=True, save=True):
     # Create a video capture instance.
