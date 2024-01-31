@@ -24,10 +24,11 @@ class AsyncPikaReader(object):
     commands that were issued and that should surface in the output as well.
 
     """
+
     EXCHANGE = "videostreams"
     EXCHANGE_TYPE = ExchangeType.topic
     ROUTING_KEY = "streams"
-    QUEUE = '' # makes randomly named queue
+    QUEUE = ""  # makes randomly named queue
 
     def __init__(self, amqp_url):
         """Create a new instance of the consumer class, passing in the AMQP
@@ -60,19 +61,20 @@ class AsyncPikaReader(object):
         :rtype: pika.adapters.asyncio_connection.AsyncioConnection
 
         """
-        LOGGER.info('Connecting to %s', self._url)
+        LOGGER.info("Connecting to %s", self._url)
         return AsyncioConnection(
             parameters=pika.URLParameters(self._url),
             on_open_callback=self.on_connection_open,
             on_open_error_callback=self.on_connection_open_error,
-            on_close_callback=self.on_connection_closed)
+            on_close_callback=self.on_connection_closed,
+        )
 
     def close_connection(self):
         self._consuming = False
         if self._connection.is_closing or self._connection.is_closed:
-            LOGGER.info('Connection is closing or already closed')
+            LOGGER.info("Connection is closing or already closed")
         else:
-            LOGGER.info('Closing connection')
+            LOGGER.info("Closing connection")
             self._connection.close()
 
     def on_connection_open(self, _unused_connection):
@@ -84,7 +86,7 @@ class AsyncPikaReader(object):
            The connection
 
         """
-        LOGGER.info('Connection opened')
+        LOGGER.info("Connection opened")
         self.open_channel()
 
     def on_connection_open_error(self, _unused_connection, err):
@@ -96,7 +98,7 @@ class AsyncPikaReader(object):
         :param Exception err: The error
 
         """
-        LOGGER.error('Connection open failed: %s', err)
+        LOGGER.error("Connection open failed: %s", err)
         self.reconnect()
 
     def on_connection_closed(self, _unused_connection, reason):
@@ -113,7 +115,7 @@ class AsyncPikaReader(object):
         if self._closing:
             self._connection.ioloop.stop()
         else:
-            LOGGER.warning('Connection closed, reconnect necessary: %s', reason)
+            LOGGER.warning("Connection closed, reconnect necessary: %s", reason)
             self.reconnect()
 
     def reconnect(self):
@@ -131,7 +133,7 @@ class AsyncPikaReader(object):
         on_channel_open callback will be invoked by pika.
 
         """
-        LOGGER.info('Creating a new channel')
+        LOGGER.info("Creating a new channel")
         self._connection.channel(on_open_callback=self.on_channel_open)
 
     def on_channel_open(self, channel):
@@ -143,7 +145,7 @@ class AsyncPikaReader(object):
         :param pika.channel.Channel channel: The channel object
 
         """
-        LOGGER.info('Channel opened')
+        LOGGER.info("Channel opened")
         self._channel = channel
         self.add_on_channel_close_callback()
         self.setup_exchange(self.EXCHANGE)
@@ -153,7 +155,7 @@ class AsyncPikaReader(object):
         RabbitMQ unexpectedly closes the channel.
 
         """
-        LOGGER.info('Adding channel close callback')
+        LOGGER.info("Adding channel close callback")
         self._channel.add_on_close_callback(self.on_channel_closed)
 
     def on_channel_closed(self, channel, reason):
@@ -167,7 +169,7 @@ class AsyncPikaReader(object):
         :param Exception reason: why the channel was closed
 
         """
-        LOGGER.warning('Channel %i was closed: %s', channel, reason)
+        LOGGER.warning("Channel %i was closed: %s", channel, reason)
         self.close_connection()
 
     def setup_exchange(self, exchange_name):
@@ -178,16 +180,16 @@ class AsyncPikaReader(object):
         :param str|unicode exchange_name: The name of the exchange to declare
 
         """
-        LOGGER.info('Declaring exchange: %s', exchange_name)
+        LOGGER.info("Declaring exchange: %s", exchange_name)
         # Note: using functools.partial is not required, it is demonstrating
         # how arbitrary data can be passed to the callback when it is called
-        cb = functools.partial(
-            self.on_exchange_declareok, userdata=exchange_name)
+        cb = functools.partial(self.on_exchange_declareok, userdata=exchange_name)
         self._channel.exchange_declare(
             exchange=exchange_name,
             exchange_type=self.EXCHANGE_TYPE,
             durable=True,
-            callback=cb)
+            callback=cb,
+        )
 
     def on_exchange_declareok(self, _unused_frame, userdata):
         """Invoked by pika when RabbitMQ has finished the Exchange.Declare RPC
@@ -197,7 +199,7 @@ class AsyncPikaReader(object):
         :param str|unicode userdata: Extra user data (exchange name)
 
         """
-        LOGGER.info('Exchange declared: %s', userdata)
+        LOGGER.info("Exchange declared: %s", userdata)
         self.setup_queue(self.QUEUE)
 
     def setup_queue(self, queue_name):
@@ -208,7 +210,7 @@ class AsyncPikaReader(object):
         :param str|unicode queue_name: The name of the queue to declare.
 
         """
-        LOGGER.info('Declaring queue %s', queue_name)
+        LOGGER.info("Declaring queue %s", queue_name)
         cb = functools.partial(self.on_queue_declareok, userdata=queue_name)
         self._channel.queue_declare(queue=queue_name, callback=cb)
 
@@ -228,14 +230,13 @@ class AsyncPikaReader(object):
         if queue_name == "":
             self._queue_name = frame.method.queue
 
-        LOGGER.info('Binding %s to %s with %s', self.EXCHANGE, queue_name,
-                    self.ROUTING_KEY)
+        LOGGER.info(
+            "Binding %s to %s with %s", self.EXCHANGE, queue_name, self.ROUTING_KEY
+        )
         cb = functools.partial(self.on_bindok, userdata=queue_name)
         self._channel.queue_bind(
-            queue_name,
-            self.EXCHANGE,
-            routing_key=self.ROUTING_KEY,
-            callback=cb)
+            queue_name, self.EXCHANGE, routing_key=self.ROUTING_KEY, callback=cb
+        )
 
     def on_bindok(self, _unused_frame, userdata):
         """Invoked by pika when the Queue.Bind method has completed. At this
@@ -245,7 +246,7 @@ class AsyncPikaReader(object):
         :param str|unicode userdata: Extra user data (queue name)
 
         """
-        LOGGER.info('Queue bound: %s', userdata)
+        LOGGER.info("Queue bound: %s", userdata)
         self.set_qos()
 
     def set_qos(self):
@@ -256,7 +257,8 @@ class AsyncPikaReader(object):
 
         """
         self._channel.basic_qos(
-            prefetch_count=self._prefetch_count, callback=self.on_basic_qos_ok)
+            prefetch_count=self._prefetch_count, callback=self.on_basic_qos_ok
+        )
 
     def on_basic_qos_ok(self, _unused_frame):
         """Invoked by pika when the Basic.QoS method has completed. At this
@@ -266,7 +268,7 @@ class AsyncPikaReader(object):
         :param pika.frame.Method _unused_frame: The Basic.QosOk response frame
 
         """
-        LOGGER.info('QOS set to: %d', self._prefetch_count)
+        LOGGER.info("QOS set to: %d", self._prefetch_count)
         self.start_consuming()
 
     def start_consuming(self):
@@ -279,10 +281,11 @@ class AsyncPikaReader(object):
         will invoke when a message is fully received.
 
         """
-        LOGGER.info('Issuing consumer related RPC commands')
+        LOGGER.info("Issuing consumer related RPC commands")
         self.add_on_cancel_callback()
         self._consumer_tag = self._channel.basic_consume(
-            self._queue_name, self.on_message)
+            self._queue_name, self.on_message
+        )
         self.was_consuming = True
         self._consuming = True
 
@@ -292,7 +295,7 @@ class AsyncPikaReader(object):
         on_consumer_cancelled will be invoked by pika.
 
         """
-        LOGGER.info('Adding consumer cancellation callback')
+        LOGGER.info("Adding consumer cancellation callback")
         self._channel.add_on_cancel_callback(self.on_consumer_cancelled)
 
     def on_consumer_cancelled(self, method_frame):
@@ -302,8 +305,7 @@ class AsyncPikaReader(object):
         :param pika.frame.Method method_frame: The Basic.Cancel frame
 
         """
-        LOGGER.info('Consumer was cancelled remotely, shutting down: %r',
-                    method_frame)
+        LOGGER.info("Consumer was cancelled remotely, shutting down: %r", method_frame)
         if self._channel:
             self._channel.close()
 
@@ -321,8 +323,12 @@ class AsyncPikaReader(object):
         :param bytes body: The message body
 
         """
-        LOGGER.info('Received message # %s from %s: %s',
-                    basic_deliver.delivery_tag, properties.app_id, body)
+        LOGGER.info(
+            "Received message # %s from %s: %s",
+            basic_deliver.delivery_tag,
+            properties.app_id,
+            body,
+        )
         self._tpe.submit(self.process_video(body.decode("utf-8")))
         self.acknowledge_message(basic_deliver.delivery_tag)
 
@@ -333,7 +339,7 @@ class AsyncPikaReader(object):
         :param int delivery_tag: The delivery tag from the Basic.Deliver frame
 
         """
-        LOGGER.info('Acknowledging message %s', delivery_tag)
+        LOGGER.info("Acknowledging message %s", delivery_tag)
         self._channel.basic_ack(delivery_tag)
 
     def stop_consuming(self):
@@ -342,9 +348,8 @@ class AsyncPikaReader(object):
 
         """
         if self._channel:
-            LOGGER.info('Sending a Basic.Cancel RPC command to RabbitMQ')
-            cb = functools.partial(
-                self.on_cancelok, userdata=self._consumer_tag)
+            LOGGER.info("Sending a Basic.Cancel RPC command to RabbitMQ")
+            cb = functools.partial(self.on_cancelok, userdata=self._consumer_tag)
             self._channel.basic_cancel(self._consumer_tag, cb)
 
     def on_cancelok(self, _unused_frame, userdata):
@@ -359,8 +364,8 @@ class AsyncPikaReader(object):
         """
         self._consuming = False
         LOGGER.info(
-            'RabbitMQ acknowledged the cancellation of the consumer: %s',
-            userdata)
+            "RabbitMQ acknowledged the cancellation of the consumer: %s", userdata
+        )
         self.close_channel()
 
     def close_channel(self):
@@ -368,7 +373,7 @@ class AsyncPikaReader(object):
         Channel.Close RPC command.
 
         """
-        LOGGER.info('Closing the channel')
+        LOGGER.info("Closing the channel")
         self._channel.close()
 
     def run(self):
@@ -392,26 +397,32 @@ class AsyncPikaReader(object):
         """
         if not self._closing:
             self._closing = True
-            LOGGER.info('Stopping')
+            LOGGER.info("Stopping")
             if self._consuming:
                 self.stop_consuming()
                 self._connection.ioloop.run_forever()
             else:
                 self._connection.ioloop.stop()
-            LOGGER.info('Stopped')
+            LOGGER.info("Stopped")
 
     def process_video(self, file):
-        cap = cv2.VideoCapture(file)
+        try:
+            cap = cv2.VideoCapture(file)
+        except Exception as e:
+            LOGGER.info("Could not open file")
+            LOGGER.info(str(e))
+            return
         id = 0
-        while(cap.isOpened()):
+        while cap.isOpened():
             # Capture frame-by-frame
             ret, frame = cap.read()
             id += 1
             if ret == True:
-                print(id)
+                LOGGER.info(id)
             # Break the loop
-            else: 
+            else:
                 break
+
 
 class ReconnectingAsyncPikaReader(object):
     """This is an example consumer that will reconnect if the nested
@@ -437,7 +448,7 @@ class ReconnectingAsyncPikaReader(object):
         if self._consumer.should_reconnect:
             self._consumer.stop()
             reconnect_delay = self._get_reconnect_delay()
-            LOGGER.info('Reconnecting after %d seconds', reconnect_delay)
+            LOGGER.info("Reconnecting after %d seconds", reconnect_delay)
             time.sleep(reconnect_delay)
             self._consumer = AsyncPikaReader(self._amqp_url)
 

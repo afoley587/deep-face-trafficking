@@ -20,3 +20,5 @@ RUN pip install poetry==1.2.2 \
     && pip uninstall -y poetry
 
 COPY ./trafficdetection /app
+
+CMD ["python3", "/app/main.py", "--rabbit", "foo"]

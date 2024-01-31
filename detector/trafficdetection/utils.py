@@ -24,10 +24,14 @@ def parse_args():
     )
     return parser.parse_args()
 
-def analyze_rabbit(params=None, criterias=[], show=True, save=True, label_criteria=False):
-    amqp_url = 'amqp://guest:guest@localhost:5672/%2F'
+
+def analyze_rabbit(
+    params=None, criterias=[], show=True, save=True, label_criteria=False
+):
+    amqp_url = "amqp://guest:guest@rabbitmq:5672/%2F"
     consumer = ReconnectingAsyncPikaReader(amqp_url)
     consumer.run()
+
 
 def analyze_video(device=0, criterias=[], show=True, save=True):
     # Create a video capture instance.

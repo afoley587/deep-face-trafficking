@@ -12,17 +12,15 @@ services:
     networks:
         - rabbitmq_go_net
 
-  # consumer:
-  #   image: rabbitmq:3-management-alpine
-  #   container_name: 'rabbitmq'
-  #   ports:
-  #       - 5672:5672
-  #       - 15672:15672
-  #   volumes:
-  #       - rabbitdata:/var/lib/rabbitmq/
-  #       - rabbitlogs:/var/log/rabbitmq
-  #   networks:
-  #       - rabbitmq_go_net
+  detector:
+    image: detector
+    container_name: 'detector'
+    build:
+      context: ./detector
+    networks:
+        - rabbitmq_go_net
+    volumes: 
+      - /tmp/:/tmp/:ro
 
 networks:
   rabbitmq_go_net:
