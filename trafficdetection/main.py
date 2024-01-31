@@ -7,6 +7,14 @@ from criteria.trafficking import is_possible_trafficking
 def main():
     args = utils.parse_args()
 
+    if args.rabbit is not None:
+        # Streams From A camera
+        utils.analyze_rabbit(
+            params=args.rabbit,
+            criterias=[is_possible_trafficking],
+            show=args.show_results,
+            save=args.save_results,
+        )
     if args.video_device is not None:
         # Streams From A camera
         utils.analyze_video(
