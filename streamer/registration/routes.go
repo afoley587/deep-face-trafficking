@@ -22,7 +22,7 @@ type Registration struct {
 var Registrations []Registration
 
 const (
-	BUFFSIZE int = 1000
+	BUFFSIZE int = 100
 )
 
 func registerWebcam(dev int) {
@@ -32,7 +32,7 @@ func registerWebcam(dev int) {
 	w := writers.FileWriter{Prefix: pref}
 	c := make(chan gocv.Mat)
 	d := make(chan int)
-	go w.Write(c)
+	go w.Write(c, BUFFSIZE)
 	go reader.Read(c, d)
 
 	read := <-d
@@ -53,7 +53,7 @@ func registerUrl(url string) {
 	d := make(chan int, 1)
 	// var wg sync.WaitGroup
 	// wg.Add(2)
-	go w.Write(c)
+	go w.Write(c, BUFFSIZE)
 	go reader.Read(c, d)
 	read := <-d
 

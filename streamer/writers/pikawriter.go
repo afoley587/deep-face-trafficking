@@ -16,7 +16,7 @@ type PikaWriter struct {
 	Exchange string
 }
 
-func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
+func (w PikaWriter) Write(imgs <-chan gocv.Mat, size int) (int, error) {
 	img := <-imgs // first frame
 
 	if img.Empty() {
@@ -26,7 +26,7 @@ func (w PikaWriter) Write(imgs <-chan gocv.Mat) (int, error) {
 	fchan := make(chan string)
 	done := make(chan WriterGoroutineResult)
 	batchPref := "/tmp/" + w.Topic
-	go batchToFile(fchan, done, imgs, batchPref, 100, img.Cols(), img.Rows())
+	go batchToFile(fchan, done, imgs, batchPref, size, img.Cols(), img.Rows())
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
