@@ -14,7 +14,7 @@ from readers.asyncpikareader import ReconnectingAsyncPikaReader
 def start():
     amqp_url = "amqp://guest:guest@rabbitmq:5672/%2F"
     consumer = ReconnectingAsyncPikaReader(amqp_url)
-    consumer.run()
+    consumer.stream()
 
 
 if __name__ == "__main__":
