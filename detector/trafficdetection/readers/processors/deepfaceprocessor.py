@@ -3,7 +3,8 @@ from deepface import DeepFace
 from loguru import logger
 
 from readers.openers.fileopener import FileOpener
-from readers.processors.base import BaseProcessor
+from readers.processors.base import BaseProcessor, ProcessorResult
+from criteria.trafficking import is_possible_trafficking
 
 class DeepFaceProcessor(BaseProcessor):
     def __init__(self, **kwargs):
@@ -13,11 +14,16 @@ class DeepFaceProcessor(BaseProcessor):
         with FileOpener(file) as o:
             f = o.read_one()
             while f is not None:
-                self.process_frame(f)
+                res = self.process_frame(f)
+
+                if res.is_trafficking:
+                    logger.info("Found trafficking victim")
+                    
                 f = o.read_one()
 
     def process_frame(self, frame, add_labels=True):
         logger.info("Processing frame....")
+        ret = ProcessorResult(frame=frame, is_trafficking=False)
         res = DeepFace.analyze(
             frame,
             enforce_detection=False,
@@ -26,7 +32,8 @@ class DeepFaceProcessor(BaseProcessor):
             silent=True,
         )
 
-        if len(res) > 0:
+        if len(res) > 0 and is_possible_trafficking(res):
+            ret.is_trafficking = True
             curr_y = 30
             curr_x = 0
             (jump_x, jump_y), _ = cv2.getTextSize(
@@ -81,4 +88,4 @@ class DeepFaceProcessor(BaseProcessor):
                         curr_y += jump_y
                     curr_x += jump_x
                     curr_y = 30
-        return frame, res
+        return ret

@@ -28,8 +28,10 @@ const (
 func registerWebcam(dev int) {
 	reader := readers.WebcamReader{Device: dev}
 
-	pref := "webcam_" + strconv.Itoa(dev)
-	w := writers.FileWriter{Prefix: pref}
+	// pref := "webcam_" + strconv.Itoa(dev)
+	// w := writers.FileWriter{Prefix: pref}
+	w := writers.PikaWriter{Topic: "streams", Exchange: "videostreams"}
+
 	c := make(chan gocv.Mat)
 	d := make(chan int)
 	go w.Write(c, BUFFSIZE)

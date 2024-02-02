@@ -1,3 +1,7 @@
+from typing import List, Dict, Union, Optional
+from pydantic import BaseModel, Field
+from typing import Any
+
 class BaseProcessor:
     def __init__(
         self,
@@ -12,3 +16,8 @@ class BaseProcessor:
 
     def process_frame(self, frame, add_labels=True):
         raise NotImplementedError
+
+
+class ProcessorResult(BaseModel):
+    frame: Any
+    is_trafficking: bool
