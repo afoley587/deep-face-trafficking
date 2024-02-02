@@ -8,7 +8,7 @@ import signal
 import sys
 import os
 
-from detectors.asyncpikareader import ReconnectingAsyncPikaReader
+from readers.asyncpikareader import ReconnectingAsyncPikaReader
 
 
 def start():
