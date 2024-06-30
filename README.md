@@ -222,21 +222,50 @@ code or join up in the project, please respond or reach out to me!
 # Follow Up - 11/15/2023
 
 ```shell
-2023-11-15 06:13:20.025 | INFO     | utils:analyze_image:108 - [{'age': 35, 'gender': {'Woman': 85.8, 'Man': 14.2}, 'dominant_gender': 'Woman', 'race': {'white': 94.8}, 'dominant_race': 'white', 'emotion': {'sad': 99.0}, 'dominant_emotion': 'sad'}]
+2023-11-15 06:13:20.025 | INFO     | utils:analyze_image:108 - [
+  {
+    "age": 35,
+    "gender": {
+      "Woman": 85.8,
+      "Man": 14.2
+    },
+    "dominant_gender": "Woman",
+    "race": {
+      "white": 94.8
+    },
+    "dominant_race": "white",
+    "emotion": {
+      "sad": 99
+    },
+    "dominant_emotion": "sad"
+  }
+]
 ```
 
 Identification and Verification:
 Next, we classify the individual as a potential victim of distress or trafficking, triggering a lookup in the National Missing and Unidentified Persons System (NAMUS). Redacted details maintain confidentiality, yet the critical information about age, gender, and race is unveiled.
 
 ```shell
-2023-11-15 06:13:20.462 | INFO     | agents.namus:search:133 - {'count': 500, 'results': [{'idFormatted': '...', 'dateOfLastContact': '2023-10-24', 'gender': 'Female', 'raceEthnicity': 'White / Caucasian', 'currentAgeFrom': 25, 'currentAgeTo': 25}]}
+2023-11-15 06:13:20.462 | INFO     | agents.namus:search:133 - {
+  "count": 500,
+  "results": [
+    {
+      "idFormatted": "...",
+      "dateOfLastContact": "2023-10-24",
+      "gender": "Female",
+      "raceEthnicity": "White / Caucasian",
+      "currentAgeFrom": 25,
+      "currentAgeTo": 25
+    }
+  ]
+}
 ```
 
 Verification and Action:
 Upon finding a match, we download relevant images from NAMUS and conduct a facial comparison using DeepFace. The result? A confirmation that the distressed face captured aligns with a current missing person, bringing us one step closer to a resolution.
 
 ```shell
-2023-11-15 06:13:21.927 | INFO     | agents.namus:_run_analysis:39 - Result is: {'verified': True, 'distance': -4.44e-16, 'threshold': 0.4, 'model': 'VGG-Face', 'time': 0.86}
+2023-11-15 06:13:21.927 | INFO     | agents.namus:_run_analysis:39 - Result is: {"verified": True, "distance": -4.44e-16, "threshold": 0.4, "model": "VGG-Face", "time": 0.86}
 ```
 
 Conclusion:
