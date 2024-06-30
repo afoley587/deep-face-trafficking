@@ -1,6 +1,6 @@
 import queue
 import cv2
-from readers.openers.base import BaseOpener
+from openers.base import BaseOpener
 
 
 class FileOpener(BaseOpener):
