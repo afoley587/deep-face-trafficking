@@ -1,8 +1,6 @@
 import functools
 import time
 import pika
-import cv2
-from deepface import DeepFace
 
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.exchange_type import ExchangeType
@@ -10,6 +8,9 @@ from concurrent.futures import ThreadPoolExecutor
 import asyncio
 
 from loguru import logger
+
+from readers.processors.deepfaceprocessor import DeepFaceProcessor
+from readers.base import BaseStreamer
 
 
 class AsyncPikaReader(object):
@@ -53,6 +54,9 @@ class AsyncPikaReader(object):
         self._AsyncPikaReader_name = None
         self._queue_name = self.QUEUE
         self._tpe = ThreadPoolExecutor(max_workers=10)
+        self._processor = DeepFaceProcessor(
+            detector_backend="retinaface", actions=["age", "gender", "race", "emotion"]
+        )
 
     def connect(self):
         """This method connects to RabbitMQ, returning the connection handle.
@@ -334,7 +338,7 @@ class AsyncPikaReader(object):
         body = body.decode("utf-8")
         self.acknowledge_message(basic_deliver.delivery_tag)
         loop = asyncio.get_running_loop()
-        loop.run_in_executor(self._tpe, self.process_video, body)
+        loop.run_in_executor(self._tpe, self._processor.process_stream, body)
 
     def acknowledge_message(self, delivery_tag):
         """Acknowledge the message delivery from RabbitMQ by sending a
@@ -409,95 +413,8 @@ class AsyncPikaReader(object):
                 self._connection.ioloop.stop()
             logger.info("Stopped")
 
-    def process_video(self, file):
-        try:
-            cap = cv2.VideoCapture(file)
-        except Exception as e:
-            logger.info("Could not open file")
-            logger.info(str(e))
-            return
-        id = 0
-        while cap.isOpened():
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            id += 1
-            if ret == True:
-                self.process(frame)
-            # Break the loop
-            else:
-                break
 
-    def process(self, frame, add_labels=True):
-        logger.info("Processing frame....")
-        detector_backend = "retinaface"
-        actions = ["age", "gender", "race", "emotion"]
-        res = DeepFace.analyze(
-            frame,
-            enforce_detection=False,
-            detector_backend=detector_backend,
-            actions=actions,
-            silent=True,
-        )
-
-        if len(res) > 0:
-            curr_y = 30
-            curr_x = 0
-            (jump_x, jump_y), _ = cv2.getTextSize(
-                "Emotion: Disgust", cv2.FONT_HERSHEY_SIMPLEX, 2, 2
-            )
-
-            for idx, r in enumerate(res):
-                age = r["age"]
-                gender = r["dominant_gender"]
-                race = r["dominant_race"]
-                emotion = r["dominant_emotion"]
-                region = r["region"]
-                x, y, w, h = region["x"], region["y"], region["w"], region["h"]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 1)
-                cv2.putText(
-                    frame,
-                    f"ID: {idx}",
-                    (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    2,
-                    (0, 0, 0),
-                    2,
-                )
-
-                if add_labels:
-                    labels = [
-                        f"ID: {idx}",
-                        f"Age: {age}",
-                        f"Gender: {gender}",
-                        f"Race: {race}",
-                        f"Emotion: {emotion}",
-                    ]
-
-                    cv2.rectangle(
-                        frame,
-                        (curr_x, curr_y - jump_y),
-                        (curr_x + jump_x, curr_y + len(labels) * jump_y),
-                        (255, 255, 255),
-                        -1,
-                    )
-
-                    for label in labels:
-                        cv2.putText(
-                            frame,
-                            label,
-                            (curr_x, curr_y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            2,
-                            (0, 0, 0),
-                            2,
-                        )
-                        curr_y += jump_y
-                    curr_x += jump_x
-                    curr_y = 30
-        return frame, res
-
-
-class ReconnectingAsyncPikaReader(object):
+class ReconnectingAsyncPikaReader(BaseStreamer):
     """This is an example consumer that will reconnect if the nested
     AsyncPikaReader indicates that a reconnect is necessary.
 
@@ -508,7 +425,7 @@ class ReconnectingAsyncPikaReader(object):
         self._amqp_url = amqp_url
         self._consumer = AsyncPikaReader(self._amqp_url)
 
-    def run(self):
+    def stream(self):
         while True:
             try:
                 self._consumer.run()

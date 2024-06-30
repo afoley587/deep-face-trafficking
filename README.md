@@ -101,6 +101,44 @@ computer vision and machine learning library. It comes prebundled with a slew of
 analysis tools such as edge detectors, contour detectors, haar cascaders, and so 
 much more.
 
+## Running
+
+To start the python services and RabbitMQ:
+
+```shell
+prompt> docker-compose up -d
+```
+
+The golang streamer isn't in Docker because I need it to access my webcam and haven't
+gotten that working in docker just yet. You can just run 
+```shell
+prompt> go run main.go
+prompt> curl -X POST http://localhost:8080/register/webcam
+```
+
+The logs will indicate when it sends 100 frames to RabbitMQ
+
+```shell
+[GIN] 2024/06/30 - 06:22:28 | 200 |      76.333µs |             ::1 | POST     "/register/webcam"
+2024/06/30 06:22:33 File /tmp/streams_0.avi finished
+2024/06/30 06:22:33 Sending to Rabbit
+2024/06/30 06:22:33  [x] Sent /tmp/streams_0.avi
+opening new...
+2024/06/30 06:22:37 File /tmp/streams_1.avi finished
+2024/06/30 06:22:37 Sending to Rabbit
+2024/06/30 06:22:37  [x] Sent /tmp/streams_1.avi
+opening new...
+opening new...
+2024/06/30 06:22:40 File /tmp/streams_2.avi finished
+2024/06/30 06:22:40 Sending to Rabbit
+2024/06/30 06:22:40  [x] Sent /tmp/streams_2.avi
+opening new...
+2024/06/30 06:22:43 File /tmp/streams_3.avi finished
+2024/06/30 06:22:43 Sending to Rabbit
+2024/06/30 06:22:43  [x] Sent /tmp/streams_3.avi
+```
+
+And it'll start streaming from your webcam
 ## Preliminary Results - Static Image Analysis
 There is a lot of code, so I think it's best to show the preliminary
 results as opposed to the whole code base. If you would like to access
@@ -111,8 +149,6 @@ I tested with three images that showed people in some sort of fear. Let's take
 a look at the results below:
 
 ```shell
-prompt> poetry run python trafficdetection/main.py --images-directory ./trafficdetection/test-images/ --save-results --show-results
-
 2023-11-09 09:42:12.175 | INFO     | utils:analyze_image:81 - Found Possible Criteria Match - is_possible_trafficking
 2023-11-09 09:42:12.176 | INFO     | utils:analyze_image:99 - saving to ./trafficdetection/test-images/test3.processed.jpg
 2023-11-09 09:42:18.822 | INFO     | utils:analyze_image:99 - saving to ./trafficdetection/test-images/test2.processed.jpg
@@ -135,10 +171,6 @@ who may or may not fit the description (age ranges, genders, and races).
 Let's do the same thing with a video stream. I will first do one with 
 my webcam, processing frames of myself showcasing various facial expressions:
 
-```shell
-prompt> poetry run python trafficdetection/main.py --video-device 0 --save-results --show-results
-prompt> 
-```
 ![Test Webcam](./images/webcam.gif)
 
 We can see that my expressions are captured in real time from my webcam. There
@@ -150,8 +182,6 @@ is evident by our logs (above) and the output video.
 Let's try it with a video file:
 
 ```shell
-prompt> poetry run python trafficdetection/main.py --video-file ./trafficdetection/test-videos/evil-dead.mp4 --save-results --show-results
-
 2023-11-09 10:35:52.942 | INFO     | utils:analyze_video:66 - Found Possible Criteria Match - is_possible_trafficking
 2023-11-09 10:35:55.008 | INFO     | utils:analyze_video:66 - Found Possible Criteria Match - is_possible_trafficking
 2023-11-09 10:35:57.102 | INFO     | utils:analyze_video:66 - Found Possible Criteria Match - is_possible_trafficking
@@ -191,29 +221,23 @@ code or join up in the project, please respond or reach out to me!
 
 # Follow Up - 11/15/2023
 
-
-Title: Revolutionizing Anti-Human Trafficking Efforts with Facial Distress Detection
-
-Introduction:
-Embarking on a groundbreaking side project, I delve into the realms of distress detection through facial analysis, utilizing camera and video feeds. My mission? To combat the harrowing epidemic of human trafficking. Imagine CCTV feeds empowered with the capability to scrutinize faces for distress cues, potentially turning the tide against this pervasive issue. The best part? This revolutionary technology comes at a minimal cost, primarily driven by man hours and the employment of free/open-source software.
-
-Implementation:
-Picture this: we run facial analysis using the powerful DeepFace library on an image, unraveling a myriad of details about the individual in question. The age, gender, race, and dominant emotion are scrutinized, providing a holistic understanding of the subject's state. A sample log output showcases the seamless integration of these features, laying the foundation for a more comprehensive analysis.
-
-shell
-Copy code
+```shell
 2023-11-15 06:13:20.025 | INFO     | utils:analyze_image:108 - [{'age': 35, 'gender': {'Woman': 85.8, 'Man': 14.2}, 'dominant_gender': 'Woman', 'race': {'white': 94.8}, 'dominant_race': 'white', 'emotion': {'sad': 99.0}, 'dominant_emotion': 'sad'}]
+```
+
 Identification and Verification:
 Next, we classify the individual as a potential victim of distress or trafficking, triggering a lookup in the National Missing and Unidentified Persons System (NAMUS). Redacted details maintain confidentiality, yet the critical information about age, gender, and race is unveiled.
 
-shell
-Copy code
+```shell
 2023-11-15 06:13:20.462 | INFO     | agents.namus:search:133 - {'count': 500, 'results': [{'idFormatted': '...', 'dateOfLastContact': '2023-10-24', 'gender': 'Female', 'raceEthnicity': 'White / Caucasian', 'currentAgeFrom': 25, 'currentAgeTo': 25}]}
+```
+
 Verification and Action:
 Upon finding a match, we download relevant images from NAMUS and conduct a facial comparison using DeepFace. The result? A confirmation that the distressed face captured aligns with a current missing person, bringing us one step closer to a resolution.
 
-shell
-Copy code
+```shell
 2023-11-15 06:13:21.927 | INFO     | agents.namus:_run_analysis:39 - Result is: {'verified': True, 'distance': -4.44e-16, 'threshold': 0.4, 'model': 'VGG-Face', 'time': 0.86}
+```
+
 Conclusion:
 In the hypothetical scenario of a CCTV feed capturing a distressed face matching a missing person, the project culminates with geotagging, image preservation, and the dispatch of pertinent information to authorities. This amalgamation of technology and compassion offers a glimmer of hope in the fight against human trafficking.
