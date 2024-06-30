@@ -191,29 +191,23 @@ code or join up in the project, please respond or reach out to me!
 
 # Follow Up - 11/15/2023
 
-
-Title: Revolutionizing Anti-Human Trafficking Efforts with Facial Distress Detection
-
-Introduction:
-Embarking on a groundbreaking side project, I delve into the realms of distress detection through facial analysis, utilizing camera and video feeds. My mission? To combat the harrowing epidemic of human trafficking. Imagine CCTV feeds empowered with the capability to scrutinize faces for distress cues, potentially turning the tide against this pervasive issue. The best part? This revolutionary technology comes at a minimal cost, primarily driven by man hours and the employment of free/open-source software.
-
-Implementation:
-Picture this: we run facial analysis using the powerful DeepFace library on an image, unraveling a myriad of details about the individual in question. The age, gender, race, and dominant emotion are scrutinized, providing a holistic understanding of the subject's state. A sample log output showcases the seamless integration of these features, laying the foundation for a more comprehensive analysis.
-
-shell
-Copy code
+```shell
 2023-11-15 06:13:20.025 | INFO     | utils:analyze_image:108 - [{'age': 35, 'gender': {'Woman': 85.8, 'Man': 14.2}, 'dominant_gender': 'Woman', 'race': {'white': 94.8}, 'dominant_race': 'white', 'emotion': {'sad': 99.0}, 'dominant_emotion': 'sad'}]
+```
+
 Identification and Verification:
 Next, we classify the individual as a potential victim of distress or trafficking, triggering a lookup in the National Missing and Unidentified Persons System (NAMUS). Redacted details maintain confidentiality, yet the critical information about age, gender, and race is unveiled.
 
-shell
-Copy code
+```shell
 2023-11-15 06:13:20.462 | INFO     | agents.namus:search:133 - {'count': 500, 'results': [{'idFormatted': '...', 'dateOfLastContact': '2023-10-24', 'gender': 'Female', 'raceEthnicity': 'White / Caucasian', 'currentAgeFrom': 25, 'currentAgeTo': 25}]}
+```
+
 Verification and Action:
 Upon finding a match, we download relevant images from NAMUS and conduct a facial comparison using DeepFace. The result? A confirmation that the distressed face captured aligns with a current missing person, bringing us one step closer to a resolution.
 
-shell
-Copy code
+```shell
 2023-11-15 06:13:21.927 | INFO     | agents.namus:_run_analysis:39 - Result is: {'verified': True, 'distance': -4.44e-16, 'threshold': 0.4, 'model': 'VGG-Face', 'time': 0.86}
+```
+
 Conclusion:
 In the hypothetical scenario of a CCTV feed capturing a distressed face matching a missing person, the project culminates with geotagging, image preservation, and the dispatch of pertinent information to authorities. This amalgamation of technology and compassion offers a glimmer of hope in the fight against human trafficking.
