@@ -9,7 +9,7 @@ import asyncio
 
 from loguru import logger
 
-from readers.processors.deepfaceprocessor import DeepFaceProcessor
+from processors.deepfaceprocessor import DeepFaceProcessor
 from readers.base import BaseStreamer
 
 

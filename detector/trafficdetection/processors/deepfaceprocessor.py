@@ -2,8 +2,8 @@ import cv2
 from deepface import DeepFace
 from loguru import logger
 
-from readers.openers.fileopener import FileOpener
-from readers.processors.base import BaseProcessor, ProcessorResult
+from openers.fileopener import FileOpener
+from processors.base import BaseProcessor, ProcessorResult
 from criteria.trafficking import is_possible_trafficking
 
 class DeepFaceProcessor(BaseProcessor):
