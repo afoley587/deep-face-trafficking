@@ -9,6 +9,8 @@ from agents.namus import NamusSearchAgent
 
 
 class DeepFaceProcessor(BaseProcessor):
+    BATCH_SIZE: int = 5  # analyze only every x frames
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -16,15 +18,16 @@ class DeepFaceProcessor(BaseProcessor):
         search_agent = NamusSearchAgent()
         with FileOpener(stream) as o:
             f = o.read_one()
+            count = 0
             while f is not None:
-                res = self.process_frame(f)
+                if count % DeepFaceProcessor.BATCH_SIZE == 0:
+                    res = self.process_frame(f)
 
-                if res.is_trafficking:
-                    logger.info("Found trafficking victim")
-                    # this would be better again going through
-                    # rabbitmq to some other service
-                    for v in res.victims:
-                        search_agent.search(f, **v)
+                    if res.is_trafficking:
+                        logger.info("Found trafficking victim")
+                        # this would be better again going through
+                        # rabbitmq to some other service
+                        search_agent.search_victims(f, res.victims)
 
                 f = o.read_one()
 

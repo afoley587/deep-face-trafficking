@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from typing import List, Dict, Any
 import shutil
 import tempfile
 
@@ -69,6 +70,10 @@ class NamusSearchAgent:
     def _get_gender(self, gender):
         _genders = {"woman": "Female", "man": "Male"}
         return _genders[gender.lower()]
+
+    def search_victims(self, frame, victims: List[Dict[Any, Any]]):
+        for v in victims:
+            self.search(frame, **v)
 
     def search(self, original, race=None, age=None, gender=None, emotion=None):
         logger.info("SEARCH NAMUS")
