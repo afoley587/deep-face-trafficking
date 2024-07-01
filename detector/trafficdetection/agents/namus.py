@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import shutil
 import tempfile
 
@@ -60,14 +60,16 @@ class NamusFaceComparator:
 
 class NamusSearchAgent:
     def __init__(self):
-        self.api_headers = {"Content-Type": "application/json; charset=utf-8"}
-        self.api_path = "/api/CaseSets/NamUs/MissingPersons/Search"
+        self.api_headers: Dict[str, str] = {
+            "Content-Type": "application/json; charset=utf-8"
+        }
+        self.api_path: str = "/api/CaseSets/NamUs/MissingPersons/Search"
 
-    def _get_race(self, race):
+    def _get_race(self, race: str) -> str:
         _races = {"white": "White / Caucasian"}
         return _races[race.lower()]
 
-    def _get_gender(self, gender):
+    def _get_gender(self, gender: str) -> str:
         _genders = {"woman": "Female", "man": "Male"}
         return _genders[gender.lower()]
 
@@ -75,7 +77,14 @@ class NamusSearchAgent:
         for v in victims:
             self.search(frame, **v)
 
-    def search(self, original, race=None, age=None, gender=None, emotion=None):
+    def search(
+        self,
+        original,
+        race: Union[str, None] = None,
+        age: Union[str, None] = None,
+        gender: Union[str, None] = None,
+        emotion: Union[str, None] = None,
+    ):
         logger.info("SEARCH NAMUS")
         search_api = NAMUS_BASE + self.api_path
 
@@ -99,9 +108,9 @@ class NamusSearchAgent:
             )
 
         if age is not None:
-            age = int(age)
-            lower_bound = age - 5
-            upper_bound = age + 5
+            age_ = int(age)
+            lower_bound = age_ - 5
+            upper_bound = age_ + 5
             predicates.append(
                 NamusPayloadPredicate(
                     field="currentAge",
