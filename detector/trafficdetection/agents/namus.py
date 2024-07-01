@@ -129,9 +129,9 @@ class NamusSearchAgent:
             logger.error(payload)
             return
         else:
-            _json = r.json()
-            logger.info(_json)
-            matches = NamusResponse(**_json)
+            json_ = r.json()
+            logger.info(json_)
+            matches = NamusResponse(**json_)
 
         if matches is not None:
             cp = NamusFaceComparator()

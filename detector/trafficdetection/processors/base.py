@@ -1,6 +1,6 @@
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Any
 from pydantic import BaseModel, Field
-from typing import Any
+
 
 class BaseProcessor:
     def __init__(
@@ -19,5 +19,5 @@ class BaseProcessor:
 
 
 class ProcessorResult(BaseModel):
-    frame: Any
     is_trafficking: bool
+    victims: List[Dict[Any, Any]]
