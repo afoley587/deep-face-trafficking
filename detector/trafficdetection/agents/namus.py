@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any, Union
 import shutil
 import tempfile
@@ -46,11 +46,9 @@ class NamusFaceComparator:
 
     def run_analysis(self, results, original):
         self.is_running = True
-        futures = []
-        for result in results:
-            futures.append(self.tpe.submit(self._run_analysis, result, original))
+        futures = [self.tpe.submit(self._run_analysis, result, original) for result in results]
 
-        for future in futures:
+        for future in as_completed(futures):
             res = future.result()
             logger.info(f"Future returned: {res}")
             if res is not None:
