@@ -5,25 +5,45 @@ from loguru import logger
 from openers.fileopener import FileOpener
 from processors.base import BaseProcessor, ProcessorResult
 from criteria.trafficking import is_possible_trafficking
+from agents.namus import NamusSearchAgent
+
 
 class DeepFaceProcessor(BaseProcessor):
+    """A processor which uses the python deepface module
+    to analyze images for human trafficking.
+
+    This processor will process a stream of video frames. It
+    will the use python deepface to detect any forms of human
+    trafficking and, if found, then perform biometric identification.
+    """
+    BATCH_SIZE: int = 5  # analyze only every x frames
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def process_stream(self, file):
-        with FileOpener(file) as o:
+    def process_stream(self, stream: str):
+        """Process the input stream and, on each frame,
+        perform deepdace analysis.
+        """
+        search_agent = NamusSearchAgent()
+        with FileOpener(stream) as o:
             f = o.read_one()
+            count = 0
             while f is not None:
-                res = self.process_frame(f)
+                if count % DeepFaceProcessor.BATCH_SIZE == 0:
+                    res = self.process_frame(f)
 
-                if res.is_trafficking:
-                    logger.info("Found trafficking victim")
-                    
+                    if res.is_trafficking:
+                        logger.info("Found trafficking victim")
+                        # this would be better again going through
+                        # rabbitmq to some other service
+                        search_agent.search_victims(f, res.victims)
+
                 f = o.read_one()
 
-    def process_frame(self, frame, add_labels=True):
-        logger.info("Processing frame....")
-        ret = ProcessorResult(frame=frame, is_trafficking=False)
+    def process_frame(self, frame):
+        """Process a single frame
+        """
         res = DeepFace.analyze(
             frame,
             enforce_detection=False,
@@ -32,60 +52,25 @@ class DeepFaceProcessor(BaseProcessor):
             silent=True,
         )
 
+        logger.info(res)
+
+        ret = ProcessorResult(is_trafficking=False, victims=[])
+
         if len(res) > 0 and is_possible_trafficking(res):
             ret.is_trafficking = True
-            curr_y = 30
-            curr_x = 0
-            (jump_x, jump_y), _ = cv2.getTextSize(
-                "Emotion: Disgust", cv2.FONT_HERSHEY_SIMPLEX, 2, 2
-            )
-
             for idx, r in enumerate(res):
                 age = r["age"]
                 gender = r["dominant_gender"]
                 race = r["dominant_race"]
                 emotion = r["dominant_emotion"]
                 region = r["region"]
-                x, y, w, h = region["x"], region["y"], region["w"], region["h"]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 1)
-                cv2.putText(
-                    frame,
-                    f"ID: {idx}",
-                    (x, y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    2,
-                    (0, 0, 0),
-                    2,
+
+                ret.victims.append(
+                    {
+                        "age": age,
+                        "gender": gender,
+                        "race": race,
+                        "emotion": emotion,
+                    }
                 )
-
-                if add_labels:
-                    labels = [
-                        f"ID: {idx}",
-                        f"Age: {age}",
-                        f"Gender: {gender}",
-                        f"Race: {race}",
-                        f"Emotion: {emotion}",
-                    ]
-
-                    cv2.rectangle(
-                        frame,
-                        (curr_x, curr_y - jump_y),
-                        (curr_x + jump_x, curr_y + len(labels) * jump_y),
-                        (255, 255, 255),
-                        -1,
-                    )
-
-                    for label in labels:
-                        cv2.putText(
-                            frame,
-                            label,
-                            (curr_x, curr_y),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            2,
-                            (0, 0, 0),
-                            2,
-                        )
-                        curr_y += jump_y
-                    curr_x += jump_x
-                    curr_y = 30
         return ret

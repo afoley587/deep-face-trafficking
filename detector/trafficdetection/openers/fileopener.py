@@ -6,7 +6,7 @@ from openers.base import BaseOpener
 class FileOpener(BaseOpener):
     def __init__(self, path: str = ""):
         super().__init__(path=path)
-        self._cap = None
+        self._cap: cv2.VideoCapture | None = None
 
     def read_one(self):
         if not self._cap:
@@ -22,6 +22,6 @@ class FileOpener(BaseOpener):
         return self
 
     def __exit__(self, exc_type, exc_value, tb):
-        if self._cap.isOpened():
+        if self._cap and self._cap.isOpened():
             self._cap.release()
         return self
