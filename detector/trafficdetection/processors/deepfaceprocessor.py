@@ -7,7 +7,9 @@ from processors.base import BaseProcessor, ProcessorResult
 from criteria.trafficking import is_possible_trafficking
 from agents.namus import NamusSearchAgent
 
-
+# TODO
+# Make async and then just invoke the deepface calls with to_thread
+# or run_in_executor
 class DeepFaceProcessor(BaseProcessor):
     """A processor which uses the python deepface module
     to analyze images for human trafficking.
