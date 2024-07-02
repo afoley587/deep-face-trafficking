@@ -11,10 +11,10 @@ class BaseProcessor:
         self.detector_backend = detector_backend
         self.actions = actions
 
-    def process_stream(self, stream):
+    def process_stream(self, stream: str):
         raise NotImplementedError
 
-    def process_frame(self, frame, add_labels=True):
+    def process_frame(self, frame):
         raise NotImplementedError
 
 

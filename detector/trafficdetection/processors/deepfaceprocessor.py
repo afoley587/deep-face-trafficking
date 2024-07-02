@@ -9,12 +9,22 @@ from agents.namus import NamusSearchAgent
 
 
 class DeepFaceProcessor(BaseProcessor):
+    """A processor which uses the python deepface module
+    to analyze images for human trafficking.
+
+    This processor will process a stream of video frames. It
+    will the use python deepface to detect any forms of human
+    trafficking and, if found, then perform biometric identification.
+    """
     BATCH_SIZE: int = 5  # analyze only every x frames
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def process_stream(self, stream):
+    def process_stream(self, stream: str):
+        """Process the input stream and, on each frame,
+        perform deepdace analysis.
+        """
         search_agent = NamusSearchAgent()
         with FileOpener(stream) as o:
             f = o.read_one()
@@ -31,9 +41,9 @@ class DeepFaceProcessor(BaseProcessor):
 
                 f = o.read_one()
 
-    def process_frame(self, frame, add_labels=True):
-        logger.info("Processing frame....")
-
+    def process_frame(self, frame):
+        """Process a single frame
+        """
         res = DeepFace.analyze(
             frame,
             enforce_detection=False,
@@ -42,17 +52,12 @@ class DeepFaceProcessor(BaseProcessor):
             silent=True,
         )
 
-        ret = ProcessorResult(is_trafficking=False, victims=[])
         logger.info(res)
+
+        ret = ProcessorResult(is_trafficking=False, victims=[])
 
         if len(res) > 0 and is_possible_trafficking(res):
             ret.is_trafficking = True
-            curr_y = 30
-            curr_x = 0
-            (jump_x, jump_y), _ = cv2.getTextSize(
-                "Emotion: Disgust", cv2.FONT_HERSHEY_SIMPLEX, 2, 2
-            )
-
             for idx, r in enumerate(res):
                 age = r["age"]
                 gender = r["dominant_gender"]
