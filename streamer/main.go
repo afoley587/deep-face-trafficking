@@ -11,7 +11,7 @@ import (
 
 Examples:
 curl -X POST http://localhost:8080/register/webcam
-curl -X POST --data '{"url": "https://www.sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4"}' http://localhost:8080/register/url
+curl -X POST --data '{"url": "file:///Users/alexanderfoley/Desktop/video_frames/demo-abridged.mov"}' http://localhost:8080/register/url
 */
 // type Stream struct {
 // 	Reader io.

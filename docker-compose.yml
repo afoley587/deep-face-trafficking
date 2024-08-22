@@ -19,25 +19,25 @@ services:
     networks:
         - rabbitmq_go_net
     volumes: 
-      - /tmp/:/tmp/:ro
+      - /tmp/:/tmp/:rw
 
-  detector-2:
-    image: detector
-    build:
-      context: ./detector
-    networks:
-        - rabbitmq_go_net
-    volumes: 
-      - /tmp/:/tmp/:ro
+  # detector-2:
+  #   image: detector
+  #   build:
+  #     context: ./detector
+  #   networks:
+  #       - rabbitmq_go_net
+  #   volumes: 
+  #     - /tmp/:/tmp/:ro
 
-  detector-3:
-    image: detector
-    build:
-      context: ./detector
-    networks:
-        - rabbitmq_go_net
-    volumes: 
-      - /tmp/:/tmp/:ro
+  # detector-3:
+  #   image: detector
+  #   build:
+  #     context: ./detector
+  #   networks:
+  #       - rabbitmq_go_net
+  #   volumes: 
+  #     - /tmp/:/tmp/:ro
 networks:
   rabbitmq_go_net:
     driver: bridge

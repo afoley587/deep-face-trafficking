@@ -15,7 +15,7 @@ from schemas.namus import (
 )
 
 NAMUS_BASE = "https://www.namus.gov"
-
+NAMUS_TAKE = 25
 
 class NamusFaceComparator:
     def __init__(self):
@@ -46,14 +46,22 @@ class NamusFaceComparator:
 
     def run_analysis(self, results, original):
         self.is_running = True
-        futures = [self.tpe.submit(self._run_analysis, result, original) for result in results]
 
-        for future in as_completed(futures):
-            res = future.result()
+        for result in results:
+            res = self._run_analysis(result, original)
             logger.info(f"Future returned: {res}")
             if res is not None:
+                logger.info("Match Found!")
                 self.running = False
                 return res
+            
+        # futures = [self.tpe.submit(self._run_analysis, result, original) for result in results]
+        # for future in as_completed(futures):
+        #     res = future.result()
+        #     logger.info(f"Future returned: {res}")
+        #     if res is not None:
+        #         self.running = False
+        #         return res
 
 
 class NamusSearchAgent:
@@ -64,12 +72,16 @@ class NamusSearchAgent:
         self.api_path: str = "/api/CaseSets/NamUs/MissingPersons/Search"
 
     def _get_race(self, race: str) -> str:
-        _races = {"white": "White / Caucasian"}
-        return _races[race.lower()]
+        _races = {
+            "white": "White / Caucasian", 
+            "black": "Black / African American",
+            "asian": "Asian"
+        }
+        return _races.get(race.lower(), None)
 
     def _get_gender(self, gender: str) -> str:
         _genders = {"woman": "Female", "man": "Male"}
-        return _genders[gender.lower()]
+        return _genders.get(gender.lower(), None)
 
     def search_victims(self, frame, victims: List[Dict[Any, Any]]):
         for v in victims:
@@ -91,19 +103,23 @@ class NamusSearchAgent:
         if race is not None:
             normalized_race = self._get_race(race)
 
-            predicates.append(
-                NamusPayloadPredicate(
-                    field="ethnicities",
-                    operator="Matches",
-                    predicates=[
-                        NamusPayloadSubPredicate(
-                            field="raceEthnicity",
-                            operator="IsIn",
-                            values=[normalized_race],
-                        )
-                    ],
+            if normalized_race is None:
+                logger.warn(f"Unknown Race: {race}")
+
+            else:
+                predicates.append(
+                    NamusPayloadPredicate(
+                        field="ethnicities",
+                        operator="Matches",
+                        predicates=[
+                            NamusPayloadSubPredicate(
+                                field="raceEthnicity",
+                                operator="IsIn",
+                                values=[normalized_race],
+                            )
+                        ],
+                    )
                 )
-            )
 
         if age is not None:
             age_ = int(age)
@@ -121,21 +137,24 @@ class NamusSearchAgent:
         if gender is not None:
             normalized_gender = self._get_gender(gender)
 
-            predicates.append(
-                NamusPayloadPredicate(
-                    field="gender",
-                    operator="IsIn",
-                    values=[normalized_gender],
-                )
-            )
+            if normalized_gender is None:
+                logger.warn(f"Unknown Gender: {gender}")
 
-        payload = NamusPayload(take=1, predicates=predicates).model_dump_json(
+            else:
+                predicates.append(
+                    NamusPayloadPredicate(
+                        field="gender",
+                        operator="IsIn",
+                        values=[normalized_gender],
+                    )
+                )
+
+        payload = NamusPayload(take=NAMUS_TAKE, predicates=predicates).model_dump_json(
             by_alias=True, exclude_none=True
         )
+
         r = requests.post(search_api, headers=self.api_headers, data=payload)
         matches = None
-        logger.info(r)
-        logger.info(payload)
         if not r.ok:
             logger.error(r)
             logger.error(payload)
@@ -147,4 +166,8 @@ class NamusSearchAgent:
 
         if matches is not None:
             cp = NamusFaceComparator()
-            possible = cp.run_analysis(matches.results, original)
+            found = cp.run_analysis(matches.results, original)
+
+            if found:
+                logger.info("MATCH FOUND!")
+                logger.info(found)

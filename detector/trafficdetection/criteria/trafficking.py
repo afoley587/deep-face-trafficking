@@ -18,6 +18,6 @@ def is_possible_trafficking(results: List[Any]) -> bool:
             return True
         if r["dominant_gender"].lower() == "woman" and r[
             "dominant_emotion"
-        ].lower() in ["fear", "disgust", "sad"]:
+        ].lower() in ["fear", "disgust", "sad", "angry"]:
             return True
     return False
